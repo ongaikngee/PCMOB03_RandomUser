@@ -1,74 +1,92 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, Button } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, TouchableOpacity, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, HeaderHeightContext } from '@react-navigation/stack';
 import Profile from './component/profile';
 
-function HomeScreen(navigation) {
+function HomeScreen({ navigation }) {
 	const DATA = [
 		{
 			id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-			title: 'First Item',
-			name: 'Alex',
-			age: 40,
+			name: 'Alex Gibson',
 			gender: 'male',
-			picture: 'https://randomuser.me/api/portraits/med/men/22.jpg'
+			picture: 'https://randomuser.me/api/portraits/men/22.jpg',
+			email: 'Alex.gibson@example.com',
+			age: '23',
 		}
 	];
 
 	const [ userDetails, setUserDetails ] = useState(DATA);
 
 	const renderItem = ({ item }) => {
-		return <Profile name={item.name} age={item.age} picture={item.picture} gender={item.gender} />;
+		return (
+			<TouchableOpacity onPress={() => navigation.navigate('Details', {...item})}>
+				<Profile picture={item.picture} />
+			</TouchableOpacity>
+		);
 	};
 
 	const addUser = () => {
 		var request = new XMLHttpRequest();
 
-		request.open('GET', 'https://randomuser.me/api/?inc=gender,name,picture,login');
+		request.open('GET', 'https://randomuser.me/api/?inc=gender,name,picture,login,email,dob');
 		request.responseType = 'json';
 		request.send();
 		request.onload = function() {
 			let name = request.response.results[0].name.first + ' ' + request.response.results[0].name.last;
-			let picture = request.response.results[0].picture.medium;
+			let picture = request.response.results[0].picture.large;
 			let gender = request.response.results[0].gender;
 			let id = request.response.results[0].login.uuid;
+			let email = request.response.results[0].email;
+			let age = request.response.results[0].dob.age;
 			setUserDetails([
 				...userDetails,
 				{
 					id: id,
-					title: 'New Item',
 					name: name,
 					gender: gender,
-					picture: picture
+					picture: picture,
+					email: email,
+					age: age,
 				}
 			]);
 		};
-  };
-  
-  const goodbye = () => {
-    setUserDetails([]);
-  };
+	};
 
-  
-  // useEffect(() => {
-	// 	navigation.setOptions({
-	// 		headerRight: () => <Button onPress={addUser} title="Add Friends" />,
-	// 		headerLeft: () => <Button onPress={goodbye} title="Reset" />
-	// 	});
-	// });
+	const goodbye = () => {
+		setUserDetails([]);
+	};
+
+	useEffect(() => {
+		navigation.setOptions({
+			headerRight: () => <Button onPress={addUser} title="Add Friends" />,
+			headerLeft: () => <Button onPress={goodbye} title="Reset" />
+		});
+	});
 
 	return (
 		<View>
-			<Button title="Add Friends" onPress={addUser} />
-      <Button title="Bye Friends" onPrese={goodbye} />
 			<FlatList
 				data={userDetails}
 				renderItem={renderItem}
 				numColumns={3}
-				// keyExtractor={item => item.id}
 			/>
+		</View>
+	);
+}
+
+function DetailsScreen({route}){
+
+	const {id, name, gender, picture, email, age} = route.params;
+	return(
+		<View style={styles.container}>
+			<Image source={{uri: picture}} style={styles.image} />
+			{/* <Text style={styles.id}>{id}</Text> */}
+			<Text style={styles.name}>{name}</Text>
+			<Text style={styles.restOfText}>{email}</Text>
+			<Text style={styles.restOfText}>{age}, {gender}</Text>
+			{/* <Text style={styles.restOfText}>{age}</Text> */}
 		</View>
 	);
 }
@@ -80,6 +98,7 @@ export default function App() {
 		<NavigationContainer>
 			<Stack.Navigator>
 				<Stack.Screen name="Random Friends" component={HomeScreen} />
+				<Stack.Screen name="Details" component={DetailsScreen} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	);
@@ -89,7 +108,25 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#fff',
-		alignItems: 'center',
-		justifyContent: 'center'
+		alignItems: "center",
+		justifyContent: "flex-start",
+	},
+	image:{
+		width:128,
+		height:120,
+		borderRadius:100,
+		borderWidth:2,
+		margin:50,
+		marginTop:120,
+	},
+	name:{
+		fontSize:30,
+	},
+	id:{
+		fontSize:15,
+		color:"grey",
+	},
+	restOfText:{
+		fontSize:20,
 	}
 });
