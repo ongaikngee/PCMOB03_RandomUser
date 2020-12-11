@@ -6,6 +6,10 @@ import { createStackNavigator, HeaderHeightContext } from '@react-navigation/sta
 import Profile from './component/profile';
 
 function HomeScreen({ navigation }) {
+	// Hooks for userDetails 
+	const [ userDetails, setUserDetails ] = useState(DATA);
+	
+	// required by FlatList. The Data to display 
 	const DATA = [
 		{
 			id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
@@ -17,8 +21,8 @@ function HomeScreen({ navigation }) {
 		}
 	];
 
-	const [ userDetails, setUserDetails ] = useState(DATA);
 
+	// required by FlatList to render the rows
 	const renderItem = ({ item }) => {
 		return (
 			<TouchableOpacity onPress={() => navigation.navigate('Details', {...item})}>
@@ -28,6 +32,7 @@ function HomeScreen({ navigation }) {
 	};
 
 	const addUser = () => {
+		// API Link to get the random user 
 		var request = new XMLHttpRequest();
 
 		request.open('GET', 'https://randomuser.me/api/?inc=gender,name,picture,login,email,dob');
@@ -40,6 +45,8 @@ function HomeScreen({ navigation }) {
 			let id = request.response.results[0].login.uuid;
 			let email = request.response.results[0].email;
 			let age = request.response.results[0].dob.age;
+			
+			// Hooks for setting the state 
 			setUserDetails([
 				...userDetails,
 				{
@@ -54,10 +61,12 @@ function HomeScreen({ navigation }) {
 		};
 	};
 
+	//function for Resetting the images
 	const goodbye = () => {
 		setUserDetails([]);
 	};
 
+	//useEffect
 	useEffect(() => {
 		navigation.setOptions({
 			headerRight: () => <Button onPress={addUser} title="Add Friends" />,
@@ -78,6 +87,7 @@ function HomeScreen({ navigation }) {
 
 function DetailsScreen({route}){
 
+	// Destructing of data. You extract the data that you need from the array 
 	const {id, name, gender, picture, email, age} = route.params;
 	return(
 		<View style={styles.container}>
@@ -95,6 +105,8 @@ const Stack = createStackNavigator();
 
 export default function App() {
 	return (
+
+		// React Navigation 
 		<NavigationContainer>
 			<Stack.Navigator>
 				<Stack.Screen name="Random Friends" component={HomeScreen} />
